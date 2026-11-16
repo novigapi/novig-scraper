@@ -15,29 +15,87 @@
         "overview": {
           "title": "Outcomes",
           "transformation": {
-            "fields": ["league", "event", "starts_at", "market", "description", "outcome", "line", "bid", "ask", "price_american", "fair_probability", "fair_american", "volume", "captured_at"]
+            "fields": [
+              "league",
+              "event",
+              "starts_at",
+              "market",
+              "description",
+              "outcome",
+              "line",
+              "bid",
+              "ask",
+              "price_american",
+              "fair_probability",
+              "fair_american",
+              "volume",
+              "captured_at"
+            ]
           },
           "display": {
             "component": "table",
             "properties": {
-              "league": { "label": "League", "format": "text" },
-              "event": { "label": "Event", "format": "text" },
-              "starts_at": { "label": "Starts", "format": "date" },
-              "market": { "label": "Market", "format": "text" },
-              "description": { "label": "Description", "format": "text" },
-              "outcome": { "label": "Outcome", "format": "text" },
-              "line": { "label": "Line", "format": "number" },
-              "bid": { "label": "Bid", "format": "number" },
-              "ask": { "label": "Ask", "format": "number" },
-              "price_american": { "label": "Taker odds", "format": "number" },
-              "fair_probability": { "label": "Fair prob.", "format": "number" },
-              "fair_american": { "label": "Fair odds", "format": "number" },
-              "volume": { "label": "Volume", "format": "number" },
-              "captured_at": { "label": "Captured", "format": "date" }
+              "league": {
+                "label": "League",
+                "format": "text"
+              },
+              "event": {
+                "label": "Event",
+                "format": "text"
+              },
+              "starts_at": {
+                "label": "Starts",
+                "format": "date"
+              },
+              "market": {
+                "label": "Market",
+                "format": "text"
+              },
+              "description": {
+                "label": "Description",
+                "format": "text"
+              },
+              "outcome": {
+                "label": "Outcome",
+                "format": "text"
+              },
+              "line": {
+                "label": "Line",
+                "format": "number"
+              },
+              "bid": {
+                "label": "Bid",
+                "format": "number"
+              },
+              "ask": {
+                "label": "Ask",
+                "format": "number"
+              },
+              "price_american": {
+                "label": "Taker odds",
+                "format": "number"
+              },
+              "fair_probability": {
+                "label": "Fair prob.",
+                "format": "number"
+              },
+              "fair_american": {
+                "label": "Fair odds",
+                "format": "number"
+              },
+              "volume": {
+                "label": "Volume",
+                "format": "number"
+              },
+              "captured_at": {
+                "label": "Captured",
+                "format": "date"
+              }
             }
           }
         }
       }
     }
-  }
+  },
+  "output": "./output_schema.json"
 }

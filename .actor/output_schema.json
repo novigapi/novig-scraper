@@ -1,0 +1,8 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Output",
+  "description": "Rows from this run.",
+  "properties": {
+    "results": { "type": "string", "title": "Results", "description": "All rows from this run as a dataset.", "template": "{{links.apiDefaultDatasetUrl}}/items" }
+  }
+}
