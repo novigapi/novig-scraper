@@ -1,0 +1,78 @@
+{
+  "title": "Novig exchange markets",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "apiKey": {
+      "title": "novigapi.com API key",
+      "type": "string",
+      "editor": "textfield",
+      "isSecret": true,
+      "description": "Required. Free (100 credits a month, no card): https://novigapi.com/sign-up?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper. You can also set NOVIGAPI_KEY in the actor environment. No Novig account is needed."
+    },
+    "league": {
+      "title": "League",
+      "type": "string",
+      "editor": "textfield",
+      "default": "NBA",
+      "prefill": "NBA",
+      "description": "Novig league code, for example NBA, NFL, NHL, MLB, NCAAF, NCAAB, WNBA, MLS, EPL, UFC, ATP, WTA."
+    },
+    "market": {
+      "title": "Market",
+      "type": "string",
+      "editor": "select",
+      "default": "game-lines",
+      "enum": ["game-lines", "moneyline", "spread", "total", "team-total", "player-props", "all"],
+      "enumTitles": [
+        "Game lines: moneyline, spread, total and team total",
+        "Moneyline",
+        "Spread",
+        "Total",
+        "Team total",
+        "Player props",
+        "Everything listed for the league"
+      ]
+    },
+    "marketTypeCode": {
+      "title": "Novig market type code",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Optional. One raw Novig market type such as POINTS, REBOUNDS or PASSING_YARDS; overrides Market."
+    },
+    "includeFair": {
+      "title": "Include no-vig fair prices",
+      "type": "boolean",
+      "default": true,
+      "description": "Adds fair_probability, fair_american and fair_decimal: the two-sided mid, (bid + 1 - other bid) / 2."
+    },
+    "player": {
+      "title": "Player slug",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Optional, for example lebron-james."
+    },
+    "team": {
+      "title": "Team slug",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Optional, for example phoenix-suns."
+    },
+    "status": {
+      "title": "Market status",
+      "type": "string",
+      "editor": "select",
+      "default": "open",
+      "enum": ["open", "suspended", "closed", "settled", "all"]
+    },
+    "maxItems": {
+      "title": "Max rows",
+      "type": "integer",
+      "default": 1000,
+      "minimum": 1,
+      "maximum": 100000,
+      "description": "Stop after this many outcome rows. Each page of 100 markets costs one credit on your own novigapi.com plan."
+    }
+  },
+  "required": []
+}
