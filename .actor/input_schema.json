@@ -22,8 +22,17 @@
       "title": "Market",
       "type": "string",
       "editor": "select",
+      "description": "Which Novig market types to read. Ignored when Novig market type code is set.",
       "default": "game-lines",
-      "enum": ["game-lines", "moneyline", "spread", "total", "team-total", "player-props", "all"],
+      "enum": [
+        "game-lines",
+        "moneyline",
+        "spread",
+        "total",
+        "team-total",
+        "player-props",
+        "all"
+      ],
       "enumTitles": [
         "Game lines: moneyline, spread, total and team total",
         "Moneyline",
@@ -62,8 +71,15 @@
       "title": "Market status",
       "type": "string",
       "editor": "select",
+      "description": "Market status to read. Open is the default; all returns every status (needs a key).",
       "default": "open",
-      "enum": ["open", "suspended", "closed", "settled", "all"]
+      "enum": [
+        "open",
+        "suspended",
+        "closed",
+        "settled",
+        "all"
+      ]
     },
     "maxItems": {
       "title": "Max rows",
