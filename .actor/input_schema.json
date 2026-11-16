@@ -23,6 +23,7 @@
       "type": "string",
       "editor": "select",
       "description": "Which Novig market types to read. Ignored when Novig market type code is set.",
+      "prefill": "game-lines",
       "default": "game-lines",
       "enum": [
         "game-lines",
@@ -72,6 +73,7 @@
       "type": "string",
       "editor": "select",
       "description": "Market status to read. Open is the default; all returns every status (needs a key).",
+      "prefill": "open",
       "default": "open",
       "enum": [
         "open",
@@ -87,7 +89,8 @@
       "default": 1000,
       "minimum": 1,
       "maximum": 100000,
-      "description": "Stop after this many outcome rows. Each page of 100 markets costs one credit on your own novigapi.com plan."
+      "description": "Stop after this many outcome rows. Each page of 100 markets costs one credit on your own novigapi.com plan.",
+      "prefill": 100
     }
   },
   "required": []
