@@ -1,5 +1,6 @@
-// Thin client: calls the documented novigapi.com REST API with the user's own key and
-// yields one flat row per outcome. Read-only; no Novig account, no order placement.
+// Thin client: calls the documented novigapi.com REST API and yields one flat row per outcome.
+// With a key: live markets, every market, cursor paging. Without one: the keyless free tier
+// (GET /api/v1/free/markets), real markets delayed and capped. Read-only; no Novig account, no order placement.
 import config from './config.js';
 
 export class ApiError extends Error {
@@ -91,21 +92,36 @@ export function outcomeRows(m, { includeFair = true } = {}) {
       r.fair_american = probToAmerican(o.fair);
       r.fair_decimal = probToDecimal(o.fair);
     }
+    r.data_tier = m.data_tier ?? 'live';
     return r;
   });
+}
+
+// A free-tier row (GET /api/v1/free/markets) in the shape outcomeRows reads. The free tier names players,
+// teams and events instead of slugs and carries no outcome ids or depth.
+const slug = (s) => (s ? String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : null);
+export function fromFree(f) {
+  return {
+    market_id: f.market_id, event_id: null, league: f.league, market_type: f.market_type, description: f.description, strike: f.strike,
+    status: f.status ?? 'OPEN', player_slug: slug(f.player), team_slug: slug(f.team), stat_slug: slug(f.stat), starts_at: f.starts_at,
+    volume: f.volume, open_interest: f.open_interest, event_description: f.event ?? null, event_status: null, observed_at: f.last_update ?? null,
+    data_tier: 'free_delayed',
+    outcomes: (f.outcomes ?? []).map((o) => ({ outcome_id: null, name: o.name, bid: o.bid, ask: o.ask, last: o.last, fair: o.fair, bid_qty: null, spread_pp: o.bid !== null && o.ask !== null && o.bid !== undefined && o.ask !== undefined ? round((o.ask - o.bid) * 100, 2) : null })),
+  };
 }
 
 export async function getJson(url, { apiKey, fetchImpl = fetch, log = () => {}, userRequest } = {}) {
   const headers = {
     Accept: 'application/json',
-    Authorization: `Bearer ${apiKey}`,
     'User-Agent': `apify-actor/${config.name}`,
   };
+  if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
   if (userRequest) headers['X-User-Request'] = userRequest;
   for (let attempt = 0; ; attempt++) {
     const res = await fetchImpl(url, { headers });
     const body = await res.json().catch(() => null);
-    if (res.status === 429 && body?.error?.code !== 'MONTHLY_QUOTA_EXCEEDED' && attempt < 3) {
+    const code = body?.error?.code;
+    if (res.status === 429 && code !== 'MONTHLY_QUOTA_EXCEEDED' && code !== 'QUOTA_EXCEEDED' && attempt < 3) {
       const wait = Math.min(Number(res.headers?.get?.('retry-after')) || 2 ** (attempt + 1), 60);
       log(`Rate limited, waiting ${wait}s`);
       await new Promise((r) => setTimeout(r, wait * 1000));
@@ -119,8 +135,32 @@ export async function getJson(url, { apiKey, fetchImpl = fetch, log = () => {}, 
   }
 }
 
+// No key: one capped page of the free tier per market type, delayed. Filters the free tier cannot apply
+// server side (player, team, player props) are applied to the rows it returns.
+export async function* fetchFreeRows(input, { fetchImpl = fetch, log = () => {} } = {}) {
+  const codes = input.marketTypeCode ? [input.marketTypeCode] : config.markets[input.market];
+  const words = [input.player, input.team].filter(Boolean).map((s) => s.replace(/-/g, ' ')).join(' ');
+  let emitted = 0;
+  const seen = new Set();
+  for (const code of codes) {
+    const q = new URLSearchParams({ league: input.league, limit: String(config.freePageSize) });
+    if (code) q.set('market_type', code);
+    if (words) q.set('q', words);
+    const body = await getJson(`${config.base}${config.freePath}?${q}`, { fetchImpl, log });
+    for (const f of body?.data ?? []) {
+      if (seen.has(f.market_id)) continue;
+      seen.add(f.market_id);
+      if (input.market === 'player-props' && !input.marketTypeCode && !f.player) continue;
+      for (const r of outcomeRows(fromFree(f), input)) {
+        yield r;
+        if (++emitted >= input.maxItems) return;
+      }
+    }
+  }
+}
+
 export async function* fetchRows(input, { apiKey, fetchImpl = fetch, log = () => {} } = {}) {
-  if (!apiKey) throw new ApiError(401, 'NO_API_KEY', 'An API key is required');
+  if (!apiKey) { yield* fetchFreeRows(input, { fetchImpl, log }); return; }
   const codes = input.marketTypeCode ? [input.marketTypeCode] : config.markets[input.market];
   const userRequest = `Apify actor: export Novig ${input.league} ${input.marketTypeCode || input.market} prices to a dataset`;
   let emitted = 0;

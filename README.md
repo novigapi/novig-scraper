@@ -2,15 +2,27 @@
 
 An Apify actor that saves Novig exchange markets to an Apify dataset (JSON, CSV, Excel) on a schedule or on demand: one row per outcome, for game lines (moneyline, spread, total, team total) and player props, with the best bid, the ask a taker gets, the last trade, the taker price as American and decimal odds, the no-vig fair price, volume, open interest and the time it was captured.
 
-It does not scrape Novig pages and needs no Novig account. It reads the documented, read-only [novigapi.com](https://novigapi.com/?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper) API with your own key, so runs are fast, rows have a stable schema and nothing breaks when the Novig app changes. A key is required: novigapi.com has no keyless market endpoint, and a run without one stops at once with a link to the free sign-up.
+It does not scrape Novig pages and needs no Novig account. It reads the documented, read-only [novigapi.com](https://novigapi.com/?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper) API so runs are fast, rows have a stable schema and nothing breaks when the Novig app changes. No key is needed to start: without one the actor reads the free delayed tier. Add a free key for live prices and every market.
 
 Independent; not affiliated with Novig. novigapi.com is an independent data service operated by Stunning Couches LLC. It is not affiliated with, endorsed by or sponsored by Novig. For placing orders or reading a Novig account, use Novig's official trading API. The data is prices, not betting advice.
 
 ## Quick start
 
-1. Get a free key (100 credits a month, no card): https://novigapi.com/sign-up?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper
-2. Run the actor with `apiKey` set, a `league` and a `market`.
+1. Run the actor with a `league` and a `market`. No key needed: you get real Novig rows from the free delayed tier.
+2. For live prices and every market, get a free key (100 credits a month, no card): https://novigapi.com/sign-up?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper and set `apiKey`.
 3. Download the dataset or connect it to Sheets, Zapier, Make or a webhook.
+
+## With and without a key
+
+| | No key (free delayed tier) | Free or paid key |
+| --- | --- | --- |
+| Data | Real Novig markets, a few minutes behind live | Live, at most about 10 seconds old on paid plans |
+| Markets | The 40 most traded upcoming markets per league (next 7 days), at most 50 rows per market type per run | Every market, any status, cursor paging |
+| Fields | Bid, ask, last, fair price, volume, open interest | Plus outcome ids, bid size, event id and status |
+| `data_tier` column | `free_delayed` | `live` |
+| Cost | Nothing | Credits on your novigapi.com plan |
+
+The free tier is https://novigapi.com/api/v1/free/markets; you can call it with curl too.
 
 ## What it can read
 
@@ -30,7 +42,7 @@ Set `marketTypeCode` to read one raw Novig market type instead, for example `POI
 
 | Field | Default | Notes |
 | --- | --- | --- |
-| `apiKey` | empty | Required. Stored as a secret. You can also set `NOVIGAPI_KEY` in the actor environment. |
+| `apiKey` | empty | Optional. Without it the run reads the free delayed tier. Stored as a secret. You can also set `NOVIGAPI_KEY` in the actor environment. |
 | `league` | `NBA` | Novig league code: `NBA`, `NFL`, `NHL`, `MLB`, `NCAAF`, `NCAAB`, `WNBA`, `MLS`, `EPL`, `UFC`, `ATP`, `WTA` and others. |
 | `market` | `game-lines` | See the table above. |
 | `marketTypeCode` | empty | One raw Novig market type; overrides `market`. |
@@ -76,7 +88,8 @@ One row per outcome:
   "captured_at": "2026-11-12T17:23:56.000Z",
   "fair_probability": 0.41,
   "fair_american": 144,
-  "fair_decimal": 2.439
+  "fair_decimal": 2.439,
+  "data_tier": "live"
 }
 ```
 
@@ -84,7 +97,7 @@ Novig prices are probabilities from 0 to 1, and Novig's book holds bids only: th
 
 ## Costs
 
-Apify compute for a run is a few seconds. API usage is billed by novigapi.com on your own plan: one credit per page of 100 markets. The free plan (100 credits a month, prices delayed up to 5 minutes) covers small scheduled runs; [paid plans](https://novigapi.com/pricing?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper) give live prices and more credits, and 1,000-credit top-ups never expire.
+Apify compute for a run is a few seconds. A run with no key reads the free delayed tier and costs no credits. With a key, API usage is billed by novigapi.com on your own plan: one credit per page of 100 markets. The free plan (100 credits a month, prices delayed up to 5 minutes) covers small scheduled runs; [paid plans](https://novigapi.com/pricing?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper) give live prices and more credits, and 1,000-credit top-ups never expire.
 
 ## Prefer code?
 

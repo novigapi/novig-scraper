@@ -1,9 +1,9 @@
 {
   "name": "novig-scraper",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Apify actor: Novig exchange markets (game lines, player props, bid, ask, no-vig fair prices), one row per outcome, read from the novigapi.com API with your own key. Independent; not affiliated with Novig.",
+  "description": "Apify actor: Novig exchange markets (game lines, player props, bid, ask, no-vig fair prices), one row per outcome, read from the novigapi.com API: free delayed data with no key, live with your own key. Independent; not affiliated with Novig.",
   "main": "src/main.js",
   "scripts": {
     "start": "node src/main.js",

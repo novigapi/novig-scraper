@@ -119,8 +119,27 @@ test('marketTypeCode overrides market', async () => {
   assert.equal(new URL(f.calls[0].url).searchParams.get('market_type'), 'POINTS');
 });
 
-test('no key and bad key surface as ApiError 401; monthly quota is not retried', async () => {
-  await assert.rejects(collect(fetchRows(normalizeInput({}), { apiKey: '' })), (e) => e instanceof ApiError && e.status === 401);
+test('no key: reads the free delayed tier, sends no Authorization, filters on the rows it gets', async () => {
+  const free = (over = {}) => ({ market_id: 'f1', league: 'NBA', description: 'Cooper Flagg 1.5 STEALS', market_type: 'STEALS', strike: 1.5, starts_at: '2026-11-13T01:05:00.000Z', event: 'Dallas Mavericks @ Minnesota Timberwolves', player: 'Cooper Flagg', team: null, stat: 'Steals', status: 'OPEN', volume: 10, open_interest: 5, fair_price: 0.41,
+    outcomes: [{ name: 'Over 1.5', bid: 0.39, ask: 0.43, last: 0.415, fair: 0.41, american: 144, decimal: 2.439 }, { name: 'Under 1.5', bid: 0.57, ask: 0.61, last: 0.585, fair: 0.59, american: -144, decimal: 1.6949 }], last_update: '2026-11-16T04:30:00.000Z', url: null, ...over });
+  const f = fake((url) => res({ free_tier: true, delayed: true, data: new URL(url).searchParams.get('market_type') === 'MONEY' ? [free({ market_id: 'g1', player: null, market_type: 'MONEY' })] : [], leagues: [] }));
+  const rows = await collect(fetchRows(normalizeInput({ league: 'NBA' }), { apiKey: '', fetchImpl: f }));
+  assert.equal(f.calls.length, 4, 'one call per game-line type');
+  assert.match(f.calls[0].url, /\/api\/v1\/free\/markets\?league=NBA&limit=50&market_type=MONEY/);
+  assert.equal('Authorization' in f.calls[0].opts.headers, false);
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].data_tier, 'free_delayed');
+  assert.equal(rows[0].market, 'moneyline');
+  assert.equal(rows[0].captured_at, '2026-11-16T04:30:00.000Z');
+  const props = fake(() => res({ data: [free(), free({ market_id: 'g2', player: null, market_type: 'SPREAD' })] }));
+  const p = await collect(fetchRows(normalizeInput({ market: 'player-props', player: 'Cooper Flagg' }), { apiKey: '', fetchImpl: props }));
+  assert.equal(p.length, 2);
+  assert.equal(p[0].player, 'cooper-flagg');
+  assert.equal(p[0].fair_american, 144);
+  assert.equal(new URL(props.calls[0].url).searchParams.get('q'), 'cooper flagg');
+});
+
+test('bad key surfaces as ApiError 401; monthly quota is not retried', async () => {
   const bad = fake(() => res({ error: { code: 'INVALID_API_KEY', message: 'Send a valid key' } }, 401));
   await assert.rejects(collect(fetchRows(normalizeInput({}), { apiKey: 'x', fetchImpl: bad })), (e) => e.status === 401);
   const quota = fake(() => res({ error: { code: 'MONTHLY_QUOTA_EXCEEDED', message: 'Monthly credits used', upgrade_url: 'u' } }, 429));

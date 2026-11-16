@@ -12,6 +12,9 @@ export default {
   free: '100 credits a month, no card',
   // Free keys return at most 100 rows a page; one credit per 100 rows requested.
   pageSize: 100,
+  // With no key: the keyless free tier, real markets a few minutes delayed, at most 50 rows a call.
+  freePath: '/api/v1/free/markets',
+  freePageSize: 50,
   // Input "market" -> Novig market_type codes. null means no market_type filter.
   markets: {
     all: [null],

@@ -8,7 +8,7 @@
       "type": "string",
       "editor": "textfield",
       "isSecret": true,
-      "description": "Required. Free (100 credits a month, no card): https://novigapi.com/sign-up?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper. You can also set NOVIGAPI_KEY in the actor environment. No Novig account is needed."
+      "description": "Optional. Without a key the actor reads the free delayed tier: real Novig markets a few minutes delayed, the 40 most traded upcoming markets per league only, at most 50 per market type. With a free key (100 credits a month, no card: https://novigapi.com/sign-up?utm_source=apify&utm_medium=actor&utm_campaign=novig-scraper) rows are live and every market is read. You can also set NOVIGAPI_KEY in the actor environment. No Novig account is needed."
     },
     "league": {
       "title": "League",
